@@ -1,7 +1,10 @@
 #!/bin/bash
 set -e
+
 SG_ID="sg-05e225318bf0878b4"
 AMI_ID="ami-0220d79f3f480ecf5"
+ZONE_ID="Z023399111NZOGHW6MWH3"
+DOMAIN_NAME="balapuram.online"
  
 for instance in "$@"; do
     echo "Processing instance: $instance"
@@ -50,4 +53,23 @@ for instance in "$@"; do
     fi
  
     echo "IP Address $instance: $IP"
- done
+ 
+    RECORD_NAME="$instance.$DOMAIN"
+ 
+    aws route53 change-resource-record-sets \
+        --hosted-zone-id "$ZONE_ID" \
+        --change-batch "{
+            \"Comment\": \"Updating record\",
+            \"Changes\": [{
+                \"Action\": \"UPSERT\",
+                \"ResourceRecordSet\": {
+                    \"Name\": \"$RECORD_NAME\",
+                    \"Type\": \"A\",
+                    \"TTL\": 1,
+                    \"ResourceRecords\": [{ \"Value\": \"$IP\" }]
+                }
+            }]
+        }"
+ 
+    echo "Record updated for $instance"
+done
