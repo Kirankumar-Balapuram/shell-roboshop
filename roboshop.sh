@@ -29,5 +29,5 @@ do
         )   
     fi     
 
-    echo "IP Adress:"
+    echo "IP Adress: $IP"
 done
