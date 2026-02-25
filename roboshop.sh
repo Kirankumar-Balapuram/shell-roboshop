@@ -7,27 +7,27 @@ DOMAIN_NAME="balapuram.online"
 
 for instance in $@
 do
-    instance_id=$(aws ec2 run-instances \
+    INSTANCE_ID=$( aws ec2 run-instances \
     --image-id $AMI_ID \
     --instance-type t3.micro \
     --security-group-ids $SG_ID \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$instance}]" \
-    --query 'Reservations[0].Instances[0].privateIpAddress' \
-    --output text)
+    --query 'Instances[0].InstanceId' \
+    --output text )
 
     if [ $instance == "frontend" ]; then
         IP=$(
             aws ec2 describe-instances \
-            --instance-ids $instance_id \
-            --query 'Reservations[0].Instances[0].publicIpAddress' \
+            --instance-ids $INSTANCE_ID  \
+            --query 'Reservations[].Instances[].publicIpAddress' \
             --output text
         )
-        RECORD_NAME="$instance.$DOMAIN_NAME"
+        RECORD_NAME="$DOMAIN_NAME"
     else
         IP=$(
             aws ec2 describe-instances \
-            --instance-ids $instance_id \
-            --query 'Reservations[0].Instances[0].privateIpAddress' \
+            --instance-ids $INSTANCE_ID \
+            --query 'Reservations[].Instances[].privateIpAddress' \
             --output text
         )   
         RECORD_NAME="$instance.$DOMAIN_NAME" # mongodb.daws88s.online
