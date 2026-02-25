@@ -17,7 +17,7 @@ do
 
     if [ $instance == "frontend" ]; then
         IP=$(
-            aws ec2 describe-instances \
+            aws ec2 wait instance-running \
             --instance-ids $INSTANCE_ID  \
             --query 'Reservations[].Instances[].publicIpAddress' \
             --output text
@@ -25,7 +25,7 @@ do
         RECORD_NAME="$DOMAIN_NAME"
     else
         IP=$(
-            aws ec2 describe-instances \
+            aws ec2 wait instance-running \
             --instance-ids $INSTANCE_ID \
             --query 'Reservations[].Instances[].privateIpAddress' \
             --output text
