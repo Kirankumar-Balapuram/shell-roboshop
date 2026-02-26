@@ -54,7 +54,7 @@ for instance in "$@"; do
  
     echo "IP Address $instance: $IP"
  
-    RECORD_NAME="$instance.$DOMAIN"
+    RECORD_NAME="$instance.$DOMAIN_NAME"
  
     aws route53 change-resource-record-sets \
         --hosted-zone-id "$ZONE_ID" \
