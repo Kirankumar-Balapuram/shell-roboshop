@@ -64,7 +64,7 @@ VALIDATE $? "Installing dependencies"
 cp $SCRIPT_DIR/catalogue.service /etc/systemd/system/catalogue.service
 VALIDATE $? "created systemctl service"
 
-systemctl deamon-reload
+systemctl daemon-reload
 systemctl enable catalogue &>>$LOGS_FILE
 systemctl start catalogue
 VALIDATE $? "starting and enabling catalogue"
