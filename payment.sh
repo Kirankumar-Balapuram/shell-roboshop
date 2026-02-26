@@ -8,60 +8,58 @@ G="\e[32m"
 Y="\e[33m"
 N="\e[0m"
 SCRIPT_DIR=$PWD
-MYSQL_HOST=mysql.balapuram.online
+MYSQL_HOST=mysql.daws88s.online
 
 if [ $USERID -ne 0 ]; then
-    echo -e "$R please run this script with root user access"
+    echo -e "$R Please run this script with root user access $N" | tee -a $LOGS_FILE
     exit 1
 fi
 
 mkdir -p $LOGS_FOLDER
 
 VALIDATE(){
-if [ $1 -ne 0 ]; then
-    echo -e "$2 ... $R Failure" | tee -a $LOGS_FILE
-    exit 1
-else
-    echo -e "$2 ... $G Success" | tee -a $LOGS_FILE
-fi   
+    if [ $1 -ne 0 ]; then
+        echo -e "$2 ... $R FAILURE $N" | tee -a $LOGS_FILE
+        exit 1
+    else
+        echo -e "$2 ... $G SUCCESS $N" | tee -a $LOGS_FILE
+    fi
 }
 
-dnf install maven -y
-VALIDATE $? "Installing Maven"
+dnf install python3 gcc python3-devel -y &>>$LOGS_FILE
+VALIDATE $? "Installing Python"
 
 id roboshop &>>$LOGS_FILE
 if [ $? -ne 0 ]; then
-    
-    useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop
+    useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOGS_FILE
     VALIDATE $? "Creating system user"
 else
-    echo -e "Roboshop user already exist ..$Y Skipping"
+    echo -e "Roboshop user already exist ... $Y SKIPPING $N"
 fi
 
-mkdir -p /app
+mkdir -p /app 
 VALIDATE $? "Creating app directory"
 
-curl -L -o /tmp/payment.zip https://roboshop-artifacts.s3.amazonaws.com/payment-v3.zip 
-cd /app 
-unzip /tmp/payment.zip
+curl -o /tmp/payment.zip https://roboshop-artifacts.s3.amazonaws.com/payment-v3.zip  &>>$LOGS_FILE
+VALIDATE $? "Downloading payment code"
 
 cd /app
 VALIDATE $? "Moving to app directory"
 
 rm -rf /app/*
-VALIDATE $? "Removing exiting code"
+VALIDATE $? "Removing existing code"
 
 unzip /tmp/payment.zip &>>$LOGS_FILE
-VALIDATE $? "unzip payment code"
+VALIDATE $? "Uzip payment code"
 
-cd /app
-pip3 install -r requirements.txt
-VALIDATE $? "installing dependecies"
+cd /app 
+pip3 install -r requirements.txt &>>$LOGS_FILE
+VALIDATE $? "Installing dependencies"
 
 cp $SCRIPT_DIR/payment.service /etc/systemd/system/payment.service
-VALIDATE $? "created systemctl service"
+VALIDATE $? "Created systemctl service"
 
 systemctl daemon-reload
-systemctl enable payment
+systemctl enable payment &>>$LOGS_FILE
 systemctl start payment
 VALIDATE $? "Enabled and started payment"
